@@ -1,7 +1,24 @@
 import { Inter } from "next/font/google";
+import { Nunito_Sans, Poppins } from "next/font/google";
 import "./globals.css";
+import { ClerkProvider } from "@clerk/nextjs";
+import { Toaster } from "sonner";
 
 const inter = Inter({ subsets: ["latin"] });
+
+export const nunito_sans_init = Nunito_Sans({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-nunito_sans',
+  weight: '400',
+});
+
+export const poppins_init = Poppins({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-poppins',
+  weight: ['300', '600']
+})
 
 export const metadata = {
   title: "Create Next App",
@@ -10,8 +27,12 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
-      <body className={inter.className}>{children}</body>
-    </html>
+    <ClerkProvider>
+      <html lang="en">
+        <body className={`${nunito_sans_init.variable} ${poppins_init.variable}`}>
+          <Toaster />
+          {children}</body>
+      </html>
+    </ClerkProvider>
   );
 }
