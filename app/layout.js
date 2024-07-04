@@ -6,14 +6,14 @@ import { Toaster } from "sonner";
 
 const inter = Inter({ subsets: ["latin"] });
 
-export const nunito_sans_init = Nunito_Sans({
+const nunitoSans = Nunito_Sans({
   subsets: ['latin'],
   display: 'swap',
   variable: '--font-nunito_sans',
   weight: '400',
 });
 
-export const poppins_init = Poppins({
+const poppins = Poppins({
   subsets: ['latin'],
   display: 'swap',
   variable: '--font-poppins',
@@ -29,9 +29,10 @@ export default function RootLayout({ children }) {
   return (
     <ClerkProvider>
       <html lang="en">
-        <body className={`${nunito_sans_init.variable} ${poppins_init.variable}`}>
+        <body className={`${nunitoSans.variable} ${poppins.variable}`}>
           <Toaster />
-          {children}</body>
+          {children}
+        </body>
       </html>
     </ClerkProvider>
   );
