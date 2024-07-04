@@ -10,16 +10,19 @@ import { useUser } from '@clerk/nextjs';
 import { Button } from '@/components/ui/button';
 import useSpeechToText from 'react-hook-speech-to-text'
 import { chatSession, generateFeedback } from '@/utils/GeminiAiModel';
+import { UserAnswer } from '@/utils/schema';
 
-const RecordAnswer = ({ MockInterviewQuestion, activeIndex }) => {
+const RecordAnswer = ({ MockInterviewQuestion, activeIndex, interviewData }) => {
 
-    const [userAnswer, setUserAnswer] = useState();
+    const [userAnswer, setUserAnswer] = useState("");
+    const [loading, setLoading] = useState();
 
     const {
         error,
         interimResult,
         isRecording,
         results,
+        setResults,
         startSpeechToText,
         stopSpeechToText,
     } = useSpeechToText({
@@ -30,25 +33,50 @@ const RecordAnswer = ({ MockInterviewQuestion, activeIndex }) => {
     if (error) return <p>Web Speech API is not available in this browser 🤷‍</p>;
 
     useEffect(() => {
-        results.map((result) => {
-            setUserAnswer(result.transcript)
-        })
+        const newTranscript = results.map((result) => result.transcript).join(" ");
+        setUserAnswer(newTranscript);
     }, [results]);
 
-    const saveUserAnswer = async () => {
+    useEffect(() => {
+        if (!isRecording && userAnswer.length > 10) {
+            updateUserAnswer()
+        }
+    }, [isRecording, userAnswer])
+
+    const StartStopRecording = async () => {
         if (isRecording) {
             stopSpeechToText();
-            if (userAnswer?.length < 10) {
-                toast("Error while saving your answer! Try again");
-                return;
-            }
-            console.log("Wait for feedback");
-            const feedback = await generateFeedback(MockInterviewQuestion[activeIndex].question, userAnswer);
-            console.log(feedback);
         } else {
             startSpeechToText();
         }
+    };
+
+    const updateUserAnswer = async () => {
+        setLoading(true);
+        console.log("Wait for feedback");
+        const question = MockInterviewQuestion[activeIndex].question;
+        const correctAnswer = MockInterviewQuestion[activeIndex].answer;
+        const feedback = await generateFeedback(question, userAnswer);
+        const resp = await db.insert(UserAnswer).values({
+            mockIdRef: interviewData?.mockId,
+            question: question,
+            correctAns: correctAnswer,
+            userAns: userAnswer,
+            feedback: feedback.feedback,
+            rating: feedback.rating,
+            userEmail: user?.primaryEmailAddress?.emailAddress,
+            createdAt: moment().format("DD-MM-yyyy"),
+        });
+
+        if (resp) {
+            toast("User Answer recorded successfully!!");
+            setUserAnswer("");
+            setResults([])
+        }
+        setResults([]);
+        setLoading(false);
     }
+
 
     return (
         <div className='flex justify-center items-center flex-col'>
@@ -67,9 +95,11 @@ const RecordAnswer = ({ MockInterviewQuestion, activeIndex }) => {
                 />
             </div>
             <Button
+
                 variant="outline"
                 className="my-1"
-                onClick={saveUserAnswer}
+                onClick={StartStopRecording}
+                disabled={loading}
             >
                 {isRecording ? (
                     <h2 className="text-red-600 items-center animate-pulse flex gap-2 my-1">
@@ -80,21 +110,6 @@ const RecordAnswer = ({ MockInterviewQuestion, activeIndex }) => {
                         <Mic /> Record Answer
                     </h2>
                 )}
-            </Button>
-            {/* <textarea
-                className="w-full p-2 border rounded"
-                rows="5"
-                placeholder="Speak or type your answer here..."
-                value={typedAnswer}
-                onChange={(e) => setTypedAnswer(e.target.value)}
-                disabled={loading}
-            ></textarea> */}
-            <Button
-                variant="outline"
-                className="my-1"
-                onClick={() => console.log(userAnswer)}
-            >
-                Submit Answer
             </Button>
         </div>
     )

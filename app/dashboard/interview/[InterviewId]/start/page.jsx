@@ -6,13 +6,14 @@ import { eq } from 'drizzle-orm';
 import QuestionSection from './_components/QuestionSection';
 import RecordAnswer from './_components/RecordAnswer';
 import { LoaderCircle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 
 const StartInterview = ({ params }) => {
     const [interviewData, setInterviewData] = useState();
     const [MockInterviewQuestion, setMockInterviewQuestion] = useState();
     const [activeIndex, setActiveIndex] = useState(0);
     useEffect(() => {
-        console.log(params.InterviewId)
         getInterviewDetails();
     }, []);
 
@@ -22,31 +23,41 @@ const StartInterview = ({ params }) => {
             .select()
             .from(MockInterview)
             .where(eq(MockInterview.mockId, params.InterviewId));
-        console.log(result[0].jsonMockResp);
 
         const jsonMockResp = await JSON.parse(result[0].jsonMockResp);
-        console.log(
-            "🚀 ~ file: page.jsx:18 ~ GetInterviewDetails ~ jsonMockResp:",
-            jsonMockResp
-        );
+
         setMockInterviewQuestion(jsonMockResp);
         setInterviewData(result[0]);
     };
     return (
-        <div className='grid grid-cols-1 md:grid-cols-2 gap-2'>
-            {MockInterviewQuestion ? <QuestionSection MockInterviewQuestion={MockInterviewQuestion}
-                activeIndex={activeIndex} setActiveIndex={setActiveIndex}
-            />
-                :
-                <LoaderCircle className='animate-spin' />}
-            {MockInterviewQuestion ?
-                <RecordAnswer
-                    MockInterviewQuestion={MockInterviewQuestion}
-                    activeIndex={activeIndex}
+        <div>
+            <div className='grid grid-cols-1 md:grid-cols-2 gap-2'>
+                {MockInterviewQuestion ? <QuestionSection MockInterviewQuestion={MockInterviewQuestion}
+                    activeIndex={activeIndex} setActiveIndex={setActiveIndex}
                 />
-                :
-                <LoaderCircle className='animate-spin' />}
+                    :
+                    <LoaderCircle className='animate-spin' />}
+                {MockInterviewQuestion ?
+                    <RecordAnswer
+                        MockInterviewQuestion={MockInterviewQuestion}
+                        activeIndex={activeIndex}
+                        interviewData={interviewData}
+                    />
+                    :
+                    <LoaderCircle className='animate-spin' />}
+            </div>
+            <div className="flex justify-end gap-6" >
+                {activeIndex > 0 && <Button onClick={() => setActiveIndex(activeIndex - 1)}>Previous Question</Button>}
+                {activeIndex != MockInterviewQuestion?.length - 1 &&
+                    <Button onClick={() => setActiveIndex(activeIndex + 1)} >Next Question</Button>
+                }
+                {activeIndex == MockInterviewQuestion?.length - 1 &&
+                    <Link href={'/dashboard/interview/' + interviewData?.mockId + '/feedback'} >
+                        <Button>End Interview</Button>
+                    </Link>
+                }
 
+            </div>
         </div>
     )
 }

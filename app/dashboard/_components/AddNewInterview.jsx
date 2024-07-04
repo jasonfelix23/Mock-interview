@@ -35,13 +35,13 @@ const AddNewInterview = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
-        console.log(jobPosition, jobDesc, jobExp);
+        // console.log(jobPosition, jobDesc, jobExp);
         const inputPrompt = generateInputPrompt(jobPosition, jobExp, jobDesc, 5);
         try {
             const response = await generateQuestionsGemini(inputPrompt, false);
-            console.log(response);
+            // console.log(response);
             if (Array.isArray(response)) {
-                console.log(JSON.stringify(response));
+                // console.log(JSON.stringify(response));
                 setJsonResponse(response);
 
                 // Convert the response to a JSON string
@@ -61,9 +61,9 @@ const AddNewInterview = () => {
                     setOpenDialogue(false);
                     router.push("/dashboard/interview/" + resp[0]?.mockId);
                 }
-                console.log("Inserted id: " + resp);
+                // console.log("Inserted id: " + resp);
             } else {
-                console.error("The response is not an array");
+                // console.error("The response is not an array");
             }
         } catch (error) {
             console.error('Error generating questions:', error);
@@ -71,7 +71,7 @@ const AddNewInterview = () => {
         setLoading(false);
     }
     return (
-        <div className='flex '>
+        <div className='flex mt-2'>
             <div className='p-10 border rounded-lg bg-secondary hover:scale-105 hover:shadow-sm cursor-pointer transition-all'
                 onClick={() => setOpenDialogue(true)}>
                 <h2 className='font-semibold text-lg text-center'>+ Add New</h2>

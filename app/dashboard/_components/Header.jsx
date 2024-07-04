@@ -5,10 +5,7 @@ import { usePathname } from 'next/navigation'
 import React, { useEffect } from 'react'
 
 const Header = () => {
-    const path = usePathname();
-    useEffect(() => {
-        console.log(path);
-    })
+
     return (
         <div className='flex p-4 justify-between bg-gray-100 shadow-sm'>
             <Image className='hidden md:block' src='/logo.svg' height={50} width={50} alt='logo' />
